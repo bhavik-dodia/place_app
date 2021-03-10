@@ -1,19 +1,46 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart' as syspath;
 
 class InputImage extends StatefulWidget {
+  final Function onSelectImage;
+
+  const InputImage({Key key, this.onSelectImage}) : super(key: key);
   @override
   _InputImageState createState() => _InputImageState();
 }
 
 class _InputImageState extends State<InputImage> {
-  var _selectedImage;
+  File _selectedImage;
+
+  Future<void> _takePicture() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.getImage(
+      source: ImageSource.camera,
+      maxWidth: 600,
+    );
+    if (pickedImage != null) {
+      final imageFile = File(pickedImage.path);
+      widget.onSelectImage(imageFile);
+      setState(() => _selectedImage = imageFile);
+      final appDir = await syspath.getApplicationDocumentsDirectory();
+      final fileName = path.basename(imageFile.path);
+      final savedImage = await imageFile.copy('${appDir.path}/$fileName');
+    } else
+      print('No image captured!!');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         Container(
-          height: 65.0,
-          width: 65.0,
+          height: 90.0,
+          width: 90.0,
           margin: const EdgeInsets.only(
             left: 8.0,
             top: 8.0,
@@ -33,7 +60,7 @@ class _InputImageState extends State<InputImage> {
                     frameBuilder:
                         (context, child, frame, wasSynchronouslyLoaded) =>
                             wasSynchronouslyLoaded
-                                ? CircularProgressIndicator.adaptive()
+                                ? child
                                 : AnimatedOpacity(
                                     child: child,
                                     opacity: frame == null ? 0 : 1,
@@ -44,20 +71,12 @@ class _InputImageState extends State<InputImage> {
                 : Container(
                     alignment: Alignment.center,
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      '😥',
-                      style: TextStyle(
-                        fontSize: 30.0,
-                        color: Colors.redAccent,
-                      ),
-                      textAlign: TextAlign.justify,
-                    ),
-                  ),
+                    child: Icon(Icons.image_rounded)),
           ),
         ),
         TextButton.icon(
-          onPressed: () {},
-          icon: Icon(Icons.camera_rounded),
+          onPressed: _takePicture,
+          icon: Icon(Icons.add_a_photo_rounded),
           label: Text('Take Picture'),
         ),
       ],
