@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:provider/provider.dart';
 
 import '../models/place.dart';
@@ -17,15 +18,33 @@ class AddPlacePage extends StatefulWidget {
 class _AddPlacePageState extends State<AddPlacePage> {
   final _titleController = TextEditingController();
   File _pickedImage;
+  PlaceLocation _pickedLocation;
 
   void _selectImage(File pickedImage) => _pickedImage = pickedImage;
+
+  Future<String> _getAddress(double lat, double long) async {
+    final addresses = await Geocoder.local
+        .findAddressesFromCoordinates(Coordinates(lat, long));
+    final address = addresses.first.addressLine;
+    return address;
+  }
+
+  void _selectPlace(double lat, double long) async =>
+      _pickedLocation = PlaceLocation(
+        latitude: lat,
+        longitude: long,
+        address: await _getAddress(lat, long),
+      );
+
   void _savePlace() {
-    if (_titleController.text.isEmpty || _pickedImage == null) return;
+    if (_titleController.text.isEmpty ||
+        _pickedImage == null ||
+        _pickedLocation == null) return;
     Provider.of<PlacesData>(context, listen: false).addPlace(
       Place(
         id: DateTime.now().toString(),
         title: _titleController.text,
-        location: null,
+        location: _pickedLocation,
         image: _pickedImage,
       ),
     );
@@ -40,7 +59,7 @@ class _AddPlacePageState extends State<AddPlacePage> {
           ? Column(
               children: [
                 Container(child: buildTopPart()),
-                InputLocation(),
+                InputLocation(onSelectPlace: _selectPlace),
               ],
             )
           : Row(
@@ -50,7 +69,7 @@ class _AddPlacePageState extends State<AddPlacePage> {
                   margin: const EdgeInsets.only(bottom: 65.0),
                   child: buildTopPart(),
                 ),
-                InputLocation(),
+                InputLocation(onSelectPlace: _selectPlace),
               ],
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

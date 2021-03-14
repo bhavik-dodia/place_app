@@ -19,7 +19,11 @@ class PlacesData extends ChangeNotifier {
             id: e['id'],
             title: e['title'],
             image: File(e['image']),
-            location: null,
+            location: PlaceLocation(
+              latitude: e['loc_lat'],
+              longitude: e['loc_long'],
+              address: e['address'],
+            ),
           ),
         )
         .toList();
@@ -35,6 +39,9 @@ class PlacesData extends ChangeNotifier {
         'id': place.id,
         'title': place.title,
         'image': place.image.path,
+        'loc_lat': place.location.latitude,
+        'loc_long': place.location.longitude,
+        'address': place.location.address,
       },
     );
   }

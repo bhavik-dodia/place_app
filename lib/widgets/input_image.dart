@@ -29,8 +29,9 @@ class _InputImageState extends State<InputImage> {
       final appDir = await syspath.getApplicationDocumentsDirectory();
       final fileName = path.basename(imageFile.path);
       final savedImage = await imageFile.copy('${appDir.path}/$fileName');
-    } else
+    } else {
       print('No image captured!!');
+    }
   }
 
   @override
@@ -71,7 +72,8 @@ class _InputImageState extends State<InputImage> {
                 : Container(
                     alignment: Alignment.center,
                     padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.image_rounded)),
+                    child: Icon(Icons.image_rounded),
+                  ),
           ),
         ),
         TextButton.icon(

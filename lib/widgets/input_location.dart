@@ -4,8 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
 import 'package:location/location.dart';
+import 'package:place_app/screens/map_page.dart';
+import 'package:provider/provider.dart';
 
 class InputLocation extends StatefulWidget {
+  final Function onSelectPlace;
+
+  const InputLocation({Key key, this.onSelectPlace}) : super(key: key);
   @override
   _InputLocationState createState() => _InputLocationState();
 }
@@ -13,10 +18,48 @@ class InputLocation extends StatefulWidget {
 class _InputLocationState extends State<InputLocation> {
   bool _isLocationSelected = false;
   LocationData locData;
+  LatLng _latLng;
+  MapController _mapController;
+
+  @override
+  void initState() {
+    super.initState();
+    _mapController = MapController();
+  }
 
   Future<void> _getLocation() async {
-    locData = await Location().getLocation();
-    setState(() => _isLocationSelected = true);
+    try {
+      locData = await Location().getLocation();
+    } catch (error) {
+      print(error);
+      return;
+    }
+    setState(() {
+      _latLng = LatLng(locData.altitude, locData.longitude);
+      _isLocationSelected = true;
+    });
+    _mapController.onReady.then(
+      (value) => _mapController.move(_latLng, 13.0),
+    );
+    widget.onSelectPlace(locData.latitude, locData.longitude);
+  }
+
+  void selectOnMap() async {
+    final latLng = await Navigator.of(context).push<LatLng>(
+      MaterialPageRoute(builder: (context) => MapPage()),
+    );
+    if (latLng == null) {
+      return;
+    } else {
+      widget.onSelectPlace(latLng.latitude, latLng.longitude);
+      setState(() {
+        _latLng = latLng;
+        _isLocationSelected = true;
+      });
+      _mapController.onReady.then(
+        (value) => _mapController.move(_latLng, 13.0),
+      );
+    }
   }
 
   @override
@@ -34,9 +77,9 @@ class _InputLocationState extends State<InputLocation> {
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(15.0),
                   child: FlutterMap(
+                    mapController: _mapController,
                     options: MapOptions(
-                      center: LatLng(locData.latitude, locData.longitude),
-                      zoom: 13.0,
+                      center: _latLng,
                     ),
                     layers: [
                       MarkerLayerOptions(
@@ -44,7 +87,7 @@ class _InputLocationState extends State<InputLocation> {
                           Marker(
                             width: 80.0,
                             height: 80.0,
-                            point: LatLng(locData.latitude, locData.longitude),
+                            point: _latLng,
                             builder: (ctx) => Icon(
                               Icons.location_on_rounded,
                               color: Colors.redAccent,
@@ -87,7 +130,7 @@ class _InputLocationState extends State<InputLocation> {
                       endIndent: 10,
                     ),
                     TextButton.icon(
-                      onPressed: () {},
+                      onPressed: selectOnMap,
                       icon: Icon(Icons.map_rounded),
                       label: Text('Select on Map'),
                     ),
