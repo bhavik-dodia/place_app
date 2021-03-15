@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong/latlong.dart';
 import 'package:location/location.dart';
-import 'package:place_app/screens/map_page.dart';
-import 'package:provider/provider.dart';
+
+import '../screens/map_page.dart';
 
 class InputLocation extends StatefulWidget {
   final Function onSelectPlace;
@@ -75,7 +75,7 @@ class _InputLocationState extends State<InputLocation> {
         child: GridTile(
           child: _isLocationSelected
               ? ClipRRect(
-                  borderRadius: BorderRadius.circular(15.0),
+                  borderRadius: BorderRadius.circular(14.0),
                   child: FlutterMap(
                     mapController: _mapController,
                     options: MapOptions(
@@ -126,8 +126,8 @@ class _InputLocationState extends State<InputLocation> {
                     ),
                     VerticalDivider(
                       thickness: 2,
-                      indent: 10,
-                      endIndent: 10,
+                      indent: 8,
+                      endIndent: 8,
                     ),
                     TextButton.icon(
                       onPressed: selectOnMap,

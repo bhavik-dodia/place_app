@@ -16,21 +16,55 @@ class InputImage extends StatefulWidget {
 class _InputImageState extends State<InputImage> {
   File _selectedImage;
 
-  Future<void> _takePicture() async {
+  _showPopup() {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        contentPadding: const EdgeInsets.all(8.0),
+        content: ListView(
+          shrinkWrap: true,
+          children: [
+            ListTile(
+              leading: Icon(Icons.camera_alt_rounded),
+              title: Text('Take Picture'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _selectPicture(ImageSource.camera);
+              },
+            ),
+            Divider(indent: 15.0, endIndent: 15.0),
+            ListTile(
+              leading: Icon(Icons.photo_library_rounded),
+              title: Text('From Gallery'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _selectPicture(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectPicture(ImageSource source) async {
     final picker = ImagePicker();
     final pickedImage = await picker.getImage(
-      source: ImageSource.camera,
+      source: source,
       maxWidth: 600,
     );
     if (pickedImage != null) {
       final imageFile = File(pickedImage.path);
-      widget.onSelectImage(imageFile);
       setState(() => _selectedImage = imageFile);
       final appDir = await syspath.getApplicationDocumentsDirectory();
       final fileName = path.basename(imageFile.path);
       final savedImage = await imageFile.copy('${appDir.path}/$fileName');
+      widget.onSelectImage(savedImage);
     } else {
-      print('No image captured!!');
+      print('No image selected!!');
     }
   }
 
@@ -77,9 +111,9 @@ class _InputImageState extends State<InputImage> {
           ),
         ),
         TextButton.icon(
-          onPressed: _takePicture,
-          icon: Icon(Icons.add_a_photo_rounded),
-          label: Text('Take Picture'),
+          onPressed: _showPopup,
+          icon: Icon(Icons.add_photo_alternate_rounded),
+          label: Text('Insert an Image'),
         ),
       ],
     );
