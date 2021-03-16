@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong/latlong.dart';
-import 'package:location/location.dart';
 
 import '../screens/map_page.dart';
 
@@ -17,9 +17,9 @@ class InputLocation extends StatefulWidget {
 
 class _InputLocationState extends State<InputLocation> {
   bool _isLocationSelected = false;
-  LocationData locData;
   LatLng _latLng;
   MapController _mapController;
+  Position _position;
 
   @override
   void initState() {
@@ -29,19 +29,21 @@ class _InputLocationState extends State<InputLocation> {
 
   Future<void> _getLocation() async {
     try {
-      locData = await Location().getLocation();
+      _position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
     } catch (error) {
       print(error);
       return;
     }
     setState(() {
-      _latLng = LatLng(locData.altitude, locData.longitude);
+      _latLng = LatLng(_position.latitude, _position.longitude);
       _isLocationSelected = true;
     });
     _mapController.onReady.then(
       (value) => _mapController.move(_latLng, 13.0),
     );
-    widget.onSelectPlace(locData.latitude, locData.longitude);
+    widget.onSelectPlace(_position.latitude, _position.longitude);
   }
 
   void selectOnMap() async {

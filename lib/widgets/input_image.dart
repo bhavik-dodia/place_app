@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as syspath;
+import 'package:place_app/helpers/channel_helper.dart';
 
 class InputImage extends StatefulWidget {
   final Function onSelectImage;
@@ -14,10 +14,11 @@ class InputImage extends StatefulWidget {
 }
 
 class _InputImageState extends State<InputImage> {
+  Channel channel = Channel();
   File _selectedImage;
 
-  _showPopup() {
-    return showDialog(
+  _showPopup() async {
+    return await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
@@ -31,8 +32,8 @@ class _InputImageState extends State<InputImage> {
               leading: Icon(Icons.camera_alt_rounded),
               title: Text('Take Picture'),
               onTap: () {
-                Navigator.of(context).pop();
-                _selectPicture(ImageSource.camera);
+                Navigator.of(context).pop(true);
+                // _selectPicture(ImageSource.camera);
               },
             ),
             Divider(indent: 15.0, endIndent: 15.0),
@@ -40,8 +41,8 @@ class _InputImageState extends State<InputImage> {
               leading: Icon(Icons.photo_library_rounded),
               title: Text('From Gallery'),
               onTap: () {
-                Navigator.of(context).pop();
-                _selectPicture(ImageSource.gallery);
+                Navigator.of(context).pop(false);
+                // _selectPicture(ImageSource.gallery);
               },
             ),
           ],
@@ -50,14 +51,17 @@ class _InputImageState extends State<InputImage> {
     );
   }
 
-  Future<void> _selectPicture(ImageSource source) async {
-    final picker = ImagePicker();
-    final pickedImage = await picker.getImage(
-      source: source,
-      maxWidth: 600,
-    );
+  void _selectPicture() async {
+    var isCamera = await _showPopup();
+    if (isCamera == null && !isCamera is bool) {
+      print('Nothing chosen');
+      return;
+    }
+    final pickedImage = isCamera
+        ? await channel.getImageFromCamera()
+        : await channel.getImageFromGallery();
     if (pickedImage != null) {
-      final imageFile = File(pickedImage.path);
+      final imageFile = File(pickedImage);
       setState(() => _selectedImage = imageFile);
       final appDir = await syspath.getApplicationDocumentsDirectory();
       final fileName = path.basename(imageFile.path);
@@ -111,7 +115,7 @@ class _InputImageState extends State<InputImage> {
           ),
         ),
         TextButton.icon(
-          onPressed: _showPopup,
+          onPressed: _selectPicture,
           icon: Icon(Icons.add_photo_alternate_rounded),
           label: Text('Insert an Image'),
         ),
