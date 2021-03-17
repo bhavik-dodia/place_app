@@ -22,7 +22,7 @@ import java.util.Locale;
 
 public class CameraUtils {
 
-    /**
+    /*
      * Refreshes gallery on adding new image/video. Gallery won't be refreshed
      * on older devices until device is rebooted
      */
@@ -43,7 +43,7 @@ public class CameraUtils {
                 && ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
     }
 
-    /**
+    /*
      * Downsizing the bitmap to avoid OutOfMemory exceptions
      */
     public static Bitmap optimizeBitmap(int sampleSize, String filePath) {
@@ -57,7 +57,7 @@ public class CameraUtils {
         return BitmapFactory.decodeFile(filePath, options);
     }
 
-    /**
+    /*
      * Checks whether device has camera or not. This method not necessary if
      * android:required="true" is used in manifest file
      */
@@ -72,7 +72,7 @@ public class CameraUtils {
         }
     }
 
-    /**
+    /*
      * Open device app settings to allow user to enable permissions
      */
     public static void openSettings(Context context) {
@@ -87,7 +87,7 @@ public class CameraUtils {
         return FileProvider.getUriForFile(context, context.getPackageName() + ".provider", file);
     }
 
-    /**
+    /*
      * Creates and returns the image or video file before opening the camera
      */
     public static File getOutputMediaFile(int type) {
