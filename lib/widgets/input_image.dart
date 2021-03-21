@@ -53,7 +53,7 @@ class _InputImageState extends State<InputImage> {
 
   void _selectPicture() async {
     var isCamera = await _showPopup();
-    if (isCamera == null && !isCamera is bool) {
+    if (isCamera == null && !(isCamera is bool)) {
       print('Nothing chosen');
       return;
     }
